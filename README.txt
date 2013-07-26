@@ -1,0 +1,1 @@
+SPDY library in python. Many concepts are derived from https://github.com/colinmarc/python-spdy.
