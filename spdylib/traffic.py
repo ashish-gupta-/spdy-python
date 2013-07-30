@@ -118,7 +118,7 @@ def parse_frame(chunk):
 
         #Find out frame parameters using frame definition
         frame_definition=frame._definition
-        print(frame_definition)
+        #print(frame_definition)
         bits=bitarray()
         bits.frombytes(bytes(chunk[8:last_byte_for_frame]))
         curser=0
@@ -221,7 +221,7 @@ def encode_frame(frame): #Converting the frame into bytes using the frame defini
         tmp.extend(_value_to_bits(frame.version,15))
         tmp.extend(_value_to_bits(frame.type,16))
         tmp.extend(_value_to_bits(frame.flags,8))
-        print("control frame headers are:",tmp)
+        #print("control frame headers are:",tmp)
         
         #Handling fields in control frame types i.e. syn stream, rst stream etc
         frame_definition=frame._definition
@@ -244,18 +244,18 @@ def encode_frame(frame): #Converting the frame into bytes using the frame defini
                 bits.extend(in_bits)
         data=bits.tobytes()
         data=bytearray(data)
-        print("syn stream specific headers except http headers are:", data)
+        #print("syn stream specific headers except http headers are:", data)
         if is_header:
             encoded_headers=_encode_headers(frame.headers,frame.version)
             data.extend(encoded_headers)
         
         data_length=len(data)
-        print("length of syn stream payload is:", data_length)
+        #print("length of syn stream payload is:", data_length)
         tmp.extend(_value_to_bits(data_length,24))
         encoded_frame.extend(tmp.tobytes())
-        print("encoded frame for control frame specif headers is:",encoded_frame)
+        #print("encoded frame for control frame specif headers is:",encoded_frame)
         encoded_frame.extend(data)
-        print("encoded frame is:",encoded_frame)
+        #print("encoded frame is:",encoded_frame)
 
     else: #data frame
 
@@ -307,7 +307,7 @@ class mode(object):
             frame=tmp[2]
             return frame
 
-    def controlled_incoming(self,frame):
+    def controlled_incoming(self,frame): #update all states and append the frame in rx_stream_frames
         if frame.is_control:
             if (frame.type==frames.SYN_REPLY):
                 if frame.stream_id not in self.stream_state: #clienthas received a data frame for a stream id which does not exist
@@ -349,10 +349,11 @@ class mode(object):
                     self.rx_stream_frames[frame.stream_id].append(frame)
                     if (frame.flags==frames.FLAG_FIN): #if this is the last frame on this stream then close the stream
                         self.stream_state[frame.stream_id]="close"
+        return True
 
-
-
-    def controlled_outgoing(self): #follow protocol properly
+    def controlled_outgoing(self): #follow protocol properly. convert all frames in tx_frames_queue in binary and teturn binary output
+        if(len(self.tx_frames_queue)==0):
+            return False
         out=bytearray()
         while(len(self.tx_frames_queue)>0):
             frame=self.tx_frames_queue.pop(0)
