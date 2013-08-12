@@ -250,6 +250,7 @@ def encode_frame(frame): #Converting the frame into bytes using the frame defini
             data.extend(encoded_headers)
         
         data_length=len(data)
+        frame.length=data_length
         #print("length of syn stream payload is:", data_length)
         tmp.extend(_value_to_bits(data_length,24))
         encoded_frame.extend(tmp.tobytes())
@@ -384,10 +385,10 @@ class mode(object):
                 if frame.stream_id not in self.stream_state: #if stream has not been created yet, drop the data frame
                     raise ClientError("This data frame belongs to a stream which is not yet created")
                 else: #stream is in existance
-                    if self.stream_state[frame.stream_id] in ['start','client_close','server_close']: #if stream is still active
+                    if self.stream_state[frame.stream_id] in ['start','server_close']: #if stream is still active
                         out.extend(encode_frame(frame))
                         if (frame.flags==frames.FLAG_FIN): #if this is the last frame on this stream then close the stream
-                            self.stream_state[frame.stream_id]="close"
+                            self.stream_state[frame.stream_id]="client_close"
         return out
 
 

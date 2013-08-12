@@ -72,6 +72,7 @@ class controlframe(frame):
          self.type=type
          self.flags=flags
          self.is_control=1
+         self.length=0
 
 class syn_stream_frame(controlframe):
     """
