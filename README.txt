@@ -4,7 +4,7 @@ Installing the scurl client
 ===========================
 Requirements
 ------------
-python version > 3
+python version > 3.3
 cython library version >= 0.15.1)
 bitarray library version >= 0.7.0
 termcolor library version >= 1.1.0
