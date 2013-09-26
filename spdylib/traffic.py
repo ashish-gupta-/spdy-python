@@ -314,7 +314,7 @@ class mode(object):
                 if frame.stream_id not in self.stream_state: #clienthas received a data frame for a stream id which does not exist
                     raise SpdyProtocolError("stream id for this syn_reply frame does not exist: server has sent a wrong syn_reply frame")
                 else: #stream id exists
-                    #self.rx_stream_frames[frame.stream_id].append(frame)
+                    self.rx_stream_frames[frame.stream_id].append(frame)
                     if(frame.flags==frames.FLAG_FIN):
                         self.stream_state[frame.stream_id]='close'
                 
@@ -322,28 +322,23 @@ class mode(object):
                 if frame.stream_id not in self.stream_state: #clienthas received a data frame for a stream id which does not exist
                     raise SpdyProtocolError("stream id for this syn_reply frame does not exist: server has sent a wrong syn_reply frame")
                 else:
-                    #self.rx_stream_frames[frame.stream_id].append(frame)
+                    self.rx_stream_frames[frame.stream_id].append(frame)
                     self.stream_state[frame.stream_id]="terminate"
 
             if (frame.type==frames.HEADERS):
-                pass
-                #self.rx_stream_frames[frame.stream_id].append(frame)
+                self.rx_stream_frames[frame.stream_id].append(frame)
             
             if (frame.type==frames.PING):
-                pass
-                #self.rx_extra_frames.append(frame)
+                self.rx_extra_frames.append(frame)
 
             if (frame.type==frames.SETTINGS):
-                pass
-                #self.rx_extra_frames.append(frame)
+                self.rx_extra_frames.append(frame)
 
             if (frame.type==frames.NOOP):
-                pass
-                #self.rx_extra_frames.append(frame)
+                self.rx_extra_frames.append(frame)
             
             if (frame.type==frames.GOAWAY):
-                pass
-                #self.rx_extra_frames.append(frame)
+                self.rx_extra_frames.append(frame)
                 return -1
 
 
