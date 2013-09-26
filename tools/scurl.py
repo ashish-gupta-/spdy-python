@@ -26,10 +26,11 @@ parser.add_option("-F","--form",dest="form_data",help="(HTTP) This lets curl emu
 parser.add_option("-d","--data",dest="url_form_data",
                     action="append",help="(HTTP) Sends the specified data in a POST request to the HTTP server, in the same way that a browser does when a user has filled in an HTML form and presses the submit button. This will cause curl to pass the data to the server using the content-type application/x-www-form-urlencoded")
 parser.add_option("-L","--location",dest="loc",action="store_true",default=False,help="(HTTP/HTTPS) If the server reports that the requested page has moved to a different location (indicated with a Location: header and a 3XX response code), this option will make scurl redo the request on the new place")
-#parser.add_option("-o","--output",dest="out_file",help="Write output to <file> instead of stdout")
+parser.add_option("-o","--output",dest="out_file",help="Write output to <file> instead of stdout")
+parser.add_option("-i",dest="in_data",action="store_true",default=False,help="print post/put data to console")
 parser.add_option("-T","--upload-file",dest="put_data",help="This transfers the specified local file to the remote URL using PUT request")
 #parser.add_option("-X","--request",dest="req",help="(HTTP) Specifies a custom request method to use when communicating with the HTTP server. The specified request will be used instead of the method otherwise used (which defaults to GET). Support HEAD,DELETE,CUSTOM,TRACE")
-parser.add_option("--http-version",type='int',dest="http_ver",default=1.1,help="(HTTP) Which HTTP version to use")
+parser.add_option("--http-version",dest="http_ver",default=1.1,help="(HTTP) Which HTTP version to use")
 parser.add_option("-v", "--verbose",action="store_true", dest="verbose", default=False,help="make lots of noise [default is no verbose]")
 
 
@@ -42,6 +43,9 @@ if (options.http_ver==1.1):
     http_string="HTTP/1.1"
 else:
     http_string="HTTP/1.0"
+
+if (options.out_file):
+    outfile=open(options.out_file,'w')
 
 default_headers={
        'method':'GET',
@@ -80,13 +84,25 @@ def print_frame(frame,side="response"): #print the results on console
 
     else: #data frame
         if side=="request":
-            cprint("[ stream %s: Request data ] send data <fin=%s,stream-id=%s,length=%s>" %(frame.stream_id,frame.flags,frame.stream_id,frame.length),'green')
-            for i in frame.data.splitlines():
-                print("%30s %s" %('',i))
+            if options.in_data:
+                cprint("[ stream %s: Request data ] send data <fin=%s,stream-id=%s,length=%s>" %(frame.stream_id,frame.flags,frame.stream_id,frame.length),'green')
+                for i in frame.data.splitlines():
+                    print("%30s %s" %('',i))
+            else:
+                if frame.flags==frames.FLAG_FIN:
+                    cprint("[ stream %s: Request data ] last send data <fin=%s,stream-id=%s,length=%s>" %(frame.stream_id,frame.flags,frame.stream_id,frame.length),'green')
+
         else:
-            cprint("[ stream %s: Response data ] received data <fin=%s,stream-id=%s,length=%s>" %(frame.stream_id,frame.flags,frame.stream_id,frame.length),'cyan')
-            for i in frame.data.splitlines():
-                print("%30s %s" %('',i))
+            if options.out_file:
+                #cprint("data is dumped into %s file" %(options.out_file),'cyan')
+                outfile.write(frame.data)
+                if frame.flags==frames.FLAG_FIN:
+                    cprint("[ stream %s: Response data ] last received data frame <fin=%s,stream-id=%s,length=%s>" %(frame.stream_id,frame.flags,frame.stream_id,frame.length),'cyan')
+                    outfile.close()
+            else:
+                cprint("[ stream %s: Response data ] received data <fin=%s,stream-id=%s,length=%s>" %(frame.stream_id,frame.flags,frame.stream_id,frame.length),'cyan')
+                for i in frame.data.splitlines():
+                    print("%30s %s" %('',i))
                     
 
 
@@ -203,6 +219,7 @@ print("=========================================================================
 print("")
 cprint("[ session starts ]",'white','on_blue')
 print("protocol which will be supported by this client is - %s" %(npn_str))
+print("ip is ",ip, "port is", port)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
@@ -254,6 +271,8 @@ while True:
         frame=c.get_frame()
         if frame:
             if options.verbose:
+                print_frame(frame)
+            elif options.out_file and frame.is_control==0:
                 print_frame(frame)
             c.controlled_incoming(frame)
             if options.loc:
