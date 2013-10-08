@@ -76,6 +76,7 @@ def _parse_headers(chunk,version):
 
 def parse_frame(chunk):
     #Checking sufficient length of frame for decoding purposes
+    #print("chunk len is:",len(chunk))
     if(len(chunk)<8):
         return (False,chunk)
     data_length=int.from_bytes(chunk[5:8],'big')
@@ -300,6 +301,9 @@ class mode(object):
         self.in_buffer.extend(data)
 
     def get_frame(self): #Pull out frames from the in_buffer
+        #print("len of in_buffer is:",len(self.in_buffer))
+        #print("len of rx_stream_frames: ",len(self.rx_stream_frames))
+        #print("len of rx_extra_frames: ",len(self.rx_extra_frames))
         tmp=parse_frame(self.in_buffer)
         if(tmp[0]==False): #no enough bytes to pull out frame information
             return False
@@ -314,13 +318,13 @@ class mode(object):
                 if frame.stream_id not in self.stream_state: #clienthas received a data frame for a stream id which does not exist
                     raise SpdyProtocolError("stream id for this syn_reply frame does not exist: server has sent a wrong syn_reply frame")
                 else: #stream id exists
-                    self.rx_stream_frames[frame.stream_id].append(frame)
+                    #self.rx_stream_frames[frame.stream_id].append(frame)
                     if(frame.flags==frames.FLAG_FIN):
                         self.stream_state[frame.stream_id]='close'
                 
             if (frame.type==frames.RST_STREAM):
                 if frame.stream_id not in self.stream_state: #clienthas received a data frame for a stream id which does not exist
-                    raise SpdyProtocolError("stream id for this syn_reply frame does not exist: server has sent a wrong syn_reply frame")
+                    raise SpdyProtocolError("stream id for this RST_STREAM frame does not exist: server has sent a wrong RST_STREAM frame")
                 else:
                     self.rx_stream_frames[frame.stream_id].append(frame)
                     self.stream_state[frame.stream_id]="terminate"
@@ -347,7 +351,7 @@ class mode(object):
                 raise SpdyProtocolError("stream id for this data frame does not exist: server has sent a wrong data frame")
             else: #stream exists
                 if self.stream_state[frame.stream_id] in ['start','client_close','server_close']: #if stream is still active
-                    self.rx_stream_frames[frame.stream_id].append(frame)
+                    #self.rx_stream_frames[frame.stream_id].append(frame)
                     if (frame.flags==frames.FLAG_FIN): #if this is the last frame on this stream then close the stream
                         self.stream_state[frame.stream_id]="close"
         return True
