@@ -28,6 +28,7 @@ parser.add_option("-d","--data",dest="url_form_data",
 parser.add_option("-L","--location",dest="loc",action="store_true",default=False,help="(HTTP/HTTPS) If the server reports that the requested page has moved to a different location (indicated with a Location: header and a 3XX response code), this option will make scurl redo the request on the new place")
 parser.add_option("-o","--output",dest="out_file",help="Write output to <file> instead of stdout")
 parser.add_option("-i",dest="in_data",action="store_true",default=False,help="print post/put data to console")
+parser.add_option("-n",dest="no_tls",action="store_true",default=False,help="dont use ssl/tls. Use plain spdy over tcp")
 parser.add_option("-q",dest="use_def_hdr",action="store_false",default=True,help="do not use default headers. use this option when all the headers have to supplied by user. automatically added headers would be content-type and content-length in case of post and put.")
 parser.add_option("-T","--upload-file",dest="put_data",help="This transfers the specified local file to the remote URL using PUT request")
 #parser.add_option("-X","--request",dest="req",help="(HTTP) Specifies a custom request method to use when communicating with the HTTP server. The specified request will be used instead of the method otherwise used (which defaults to GET). Support HEAD,DELETE,CUSTOM,TRACE")
@@ -252,6 +253,8 @@ for url in urls:
 
 #Socket and final frames
 port=443
+if options.no_tls:
+    port=80
 npn_str="spdy/"+str(options.version)
 print("=========================================================================")
 print("")
@@ -260,11 +263,16 @@ print("protocol which will be supported by this client is - %s" %(npn_str))
 print("ip is ",ip, "port is", port)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-ctx.set_npn_protocols([npn_str])
-ss = ctx.wrap_socket(sock)
-ss.connect((ip,port))
-print("protocol selected by npn negotiation is : %s" %(ss.selected_npn_protocol()))
+if not options.no_tls:
+    ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    ctx.set_npn_protocols([npn_str])
+    ss = ctx.wrap_socket(sock)
+    ss.connect((ip,port))
+    print("protocol selected by npn negotiation is : %s" %(ss.selected_npn_protocol()))
+else:
+    sock.connect((ip,port))
+    ss=sock
+    print("protocol selected is plain spdy over tcp")
 
 c=traffic.mode(options.version,'client')
 out=bytearray()
