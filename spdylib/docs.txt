@@ -1,0 +1,10 @@
+frames.py -> contains frame definition for all spdy frames. For more info comments along with the code can be used.
+
+traffic.py -> Contains following functions:-
+_parse_headers - to parse spdy headers (spdy header format) from the chunk of data
+parse_frame - to parse spdy frame from chunk of data
+_encode_headers - to convert a list of tuple into spdy header format and encrypt it
+encode_frame - to convert a frame trype from frames.py into a spdy frame
+
+class mode -> will be used for receiving/sending frames across the network
+

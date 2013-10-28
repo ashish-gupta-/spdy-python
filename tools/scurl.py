@@ -6,6 +6,7 @@ import re
 import socket
 import ssl
 from termcolor import colored, cprint
+from spdylib._zlib_stream import Inflater, Deflater
 
 ################################################################################################
 ############### describe available options and parse them  #####################################
@@ -39,6 +40,11 @@ parser.add_option("-v", "--verbose",action="store_true", dest="verbose", default
 #Parse the options supplied from CLI
 (options, args) = parser.parse_args()
 urls=args
+
+#initialize zlib
+options.version=int(options.version)
+traffic.inflater = Inflater(options.version)
+traffic.deflater = Deflater(options.version)
 #print(options.url_form_data)
 #print(options.form_data)
 #print(options.custhdr)
@@ -51,13 +57,23 @@ if (options.out_file):
     outfile=open(options.out_file,'w')
 
 if (options.use_def_hdr):
-    default_headers={
-        'method':'GET',
-        'scheme':'HTTP',
-        'version':http_string,
-        'user-agent':options.u_agent,
-        'accept':'*/*',
-        }
+    if (options.version==2):
+        default_headers={
+            'method':'GET',
+            'scheme':'HTTP',
+            'version':http_string,
+            'user-agent':options.u_agent,
+            'accept':'*/*',
+            }
+    if (options.version==3):
+        default_headers={
+            ':method':'GET',
+            ':scheme':'HTTP',
+            ':version':http_string,
+            'user-agent':options.u_agent,
+            'accept':'*/*',
+            }
+
 else:
     default_headers={}
 
@@ -179,7 +195,10 @@ def handle_redirect(frame):
     hdr_dict=default_headers
     if frame.is_control:
         if frame.type==frames.SYN_REPLY:
-            code=dict(frame.headers)['status']
+            if (options.version==2):
+                code=dict(frame.headers)['status']
+            if (options.version==3):
+                code=dict(frame.headers)[':status']
             if code=='300' or code=='301' or code=='302':
                 cprint("Got a 3xx response, redirect request will be sent",'green')
                 try:
@@ -193,8 +212,13 @@ def handle_redirect(frame):
                 else:
                     host=url
                     path=""
-                hdr_dict['host']=host
-                hdr_dict['url']='/'+path
+                if (options.version==2):
+                    hdr_dict['host']=host
+                    hdr_dict['url']='/'+path
+                if (options.version==3):
+                    hdr_dict[':host']=host
+                    hdr_dict[':path']='/'+path
+                
                 for key in hdr_dict.keys():
                     headers.append((key,str(hdr_dict[key])))
                 redir_frame=frames.syn_stream_frame(c.stream_id,headers,frames.FLAG_FIN,options.version)
@@ -216,27 +240,31 @@ for url in urls:
         path=""
     ip=host
     if options.use_def_hdr:
-        hdr_dict['host']=host
-        hdr_dict['url']='/'+path
+        if (options.version==2):
+            hdr_dict['host']=host
+            hdr_dict['url']='/'+path
+        if (options.version==3):
+            hdr_dict[':host']=host
+            hdr_dict[':path']='/'+path
 
     #Convery dict to list of tiple
     if options.url_form_data:
         if options.use_def_hdr:
-            hdr_dict['method']="POST"
+            hdr_dict[':method']="POST"
         hdr_dict['content-type']="application/x-www-form-urlencoded"
         url_data=handle_url_form_data(options.url_form_data)
         hdr_dict['content-length']=len(url_data)
 
     if options.form_data:
         if options.use_def_hdr:
-            hdr_dict['method']="POST"
+            hdr_dict[':method']="POST"
         hdr_dict['content-type']="multipart/form-data; boundary=----------------------------402bda0d4395"
         final_form_data=handle_form_data(options.form_data)
         hdr_dict['content-length']=len(final_form_data)
 
     if options.put_data:
         if options.use_def_hdr:
-            hdr_dict['method']="PUT"
+            hdr_dict[':method']="PUT"
         f=open(options.put_data)
         final_put_data=f.read()
         f.close()

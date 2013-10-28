@@ -2,9 +2,9 @@ import spdylib.frames as frames
 from bitarray import bitarray
 from spdylib._zlib_stream import Inflater, Deflater
 
-version=2
-inflater = Inflater(version)
-deflater = Deflater(version)
+#version=2
+#inflater = Inflater(version)
+#deflater = Deflater(version)
 
 class ClientError(Exception):
     #to handle error in client side code

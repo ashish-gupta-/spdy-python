@@ -8,7 +8,7 @@ zlib_wrapper = Extension(
 
 setup(
             name="spdylib",
-            version="1.0",
+            version="2.0",
             description="Spdy library for version 2 & 3",
             author="Ashish Gupta",
             author_email="ashish049@gmail.com",
@@ -18,5 +18,4 @@ setup(
             ext_modules=[zlib_wrapper],
             packages=["spdylib"],
             package_dir={"spdylib":"spdylib"},
-            data_files=[('',['tools/scurl.py'])]
             )

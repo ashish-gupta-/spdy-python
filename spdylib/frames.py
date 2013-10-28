@@ -106,8 +106,8 @@ class syn_stream_frame(controlframe):
                                 ('pri',2),(False,14),
                                 ('headers',-1)
                     ]
-            if version==3: #PENDING:have to accomodate Slot field
-                self._definition=[
+        if version==3: #PENDING:have to accomodate Slot field
+            self._definition=[
                                 (False,1),('stream_id',31),
                                 (False,1),('assoc_stream_id',31),
                                 ('pri',2),(False,14),
@@ -137,12 +137,18 @@ class syn_reply_frame(controlframe):
         self.definition(version)
 
     def definition(self,version=DEFAULT_VERSION):
-        if (version==2) or (version==3):
+        if (version==2):
             self._definition=[
                                 (False,1),('stream_id',31),
                                 (False,16),
                                 ('headers',-1)
                     ]
+        if (version==3):
+            self._definition=[
+                                (False,1),('stream_id',31),
+                                ('headers',-1)
+                    ]
+
 
 
 class rst_stream_frame(controlframe):
