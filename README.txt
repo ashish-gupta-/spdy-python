@@ -8,6 +8,11 @@ rm -rf MANIFEST dist build
 
 Requirements
 ------------
+OpenSSL >= 1.0.1
+check with "openssl version" command
+
+Available python packages
+-------------------------
 python version > 3.3
 cython library version >= 0.15.1
 bitarray library version >= 0.7.0
@@ -36,22 +41,22 @@ python3.3 --version
 tar -zxvf Cython-0.19.1.tar.gz
 cd Cython-0.19.1
 python3.3 setup.py install
-rm -rf Cython-0.19.1
 cd ..
+rm -rf Cython-0.19.1
 
 5. Install bitarray:-
 tar -zxvf bitarray-0.8.1.tar.gz
 cd bitarray-0.8.1
 python3.3 setup.py install
-rm -rf bitarray-0.8.1
 cd ..
+rm -rf bitarray-0.8.1
 
 6. Install termcolor:-
 tar -zxvf termcolor-1.1.0.tar.gz
 cd termcolor-1.1.0
 python3.3 setup.py install
-rm -rf termcolor-1.1.0
 cd ..
+rm -rf termcolor-1.1.0
 
 7. Install spdylib
 tar -zxvf spdylib-2.1.tar.gz
@@ -60,8 +65,9 @@ python3.3 setup.py install
 cd ..
 
 8. scurl is ready to use:-
+cd ../tools
 python3.3 scurl.py -h
-python3.3 scurl -v https://www.google.co.in
+python3.3 scurl.py -v https://www.google.co.in
 
 
 
