@@ -61,7 +61,10 @@ def print_frame(frame,side="response"): #print the results on console
                 print("%30s %s:%s" %('',hname,hvalue))
 
         if frame.type==frames.SYN_REPLY:
-            cprint("[ stream %s: Response headers ] receive SYN_REPLY frame <version=%s,fin=%s,stream-id=%s>" %(frame.stream_id,frame.version,frame.flags,frame.stream_id),'cyan')
+            if side=="request":
+                cprint("[ stream %s: Request side syn_reply] send SYN_REPLY frame <version=%s,fin=%s,stream-id=%s>" %(frame.stream_id,frame.version,frame.flags,frame.stream_id),'green')
+            else:
+                cprint("[ stream %s: Response headers ] receive SYN_REPLY frame <version=%s,fin=%s,stream-id=%s>" %(frame.stream_id,frame.version,frame.flags,frame.stream_id),'cyan')
             for (hname,hvalue) in frame.headers:
                 print("%30s %s:%s" %('',hname,hvalue))
 
@@ -73,13 +76,22 @@ def print_frame(frame,side="response"): #print the results on console
                 cprint("received GOAWAY frame <version=%s,flags=%s,last-good-stream-id=%s>" %(frame.version,frame.flags,frame.last_stream_id),'cyan')
         
         if frame.type==frames.RST_STREAM:
-            cprint("[ stream %s: RST] received RST_STREAM frame <version=%s,flags=%s,status=%s>" %(frame.stream_id,frame.version,frame.flags,frame.status_code),'cyan')
+            if side=="request":
+                cprint("[ stream %s: RST] send RST_STREAM frame <version=%s,flags=%s,status=%s>" %(frame.stream_id,frame.version,frame.flags,frame.status_code),'green')
+            else:
+                cprint("[ stream %s: RST] received RST_STREAM frame <version=%s,flags=%s,status=%s>" %(frame.stream_id,frame.version,frame.flags,frame.status_code),'cyan')
 
         if frame.type==frames.SETTINGS:
-            cprint("received SETTINGS frame <version=%s,flags=%s>" %(frame.version,frame.flags),'cyan')
+            if side=="request":
+                cprint("send SETTINGS frame <version=%s,flags=%s>" %(frame.version,frame.flags),'green')
+            else:
+                cprint("received SETTINGS frame <version=%s,flags=%s>" %(frame.version,frame.flags),'cyan')
 
         if frame.type==frames.PING:
-            cprint("received PING frame <version=%s,flags=%s.ping_id=%s>" %(frame.version,frame.flags.frame.ping_id),'cyan')
+            if side=="request":
+                cprint("send PING frame <version=%s,flags=%s,ping_id=%s>" %(frame.version,frame.flags,frame.ping_id),'green')	
+            else:
+                cprint("received PING frame <version=%s,flags=%s,ping_id=%s>" %(frame.version,frame.flags,frame.ping_id),'cyan')
 
     else: #data frame
         if side=="request":
@@ -360,24 +372,34 @@ if (debug > 0):
         print_frame(frame,"request")
 
 #sending/receiving the frames
-out=c.controlled_outgoing()
-if out:
-    ss.sendall(out)
-data=ss.recv(1024)
-c.incoming(data)
 while True:
-    frame=c.get_frame()
-    if frame:
-        if (debug > 0):
-            if frame.is_control==0 and cmd_options.out_file:
-                outfile=open(cmd_options.out_file,'a') #to save from memory error we will be closing the file and opening it again for each write
-            print_frame(frame)
-        elif cmd_options.out_file and frame.is_control==0:
-            outfile=open(cmd_options.out_file,'a')
-            print_frame(frame)
-    else:
+    out=c.controlled_outgoing()
+    if out:
+        ss.sendall(out)
+    data=ss.recv(1024)
+    c.incoming(data)
+    while True:
+        frame=c.get_frame()
+        if frame:
+            if (debug > 0):
+                if frame.is_control==0 and cmd_options.out_file:
+                    outfile=open(cmd_options.out_file,'a') #to save from memory error we will be closing the file and opening it again for each write
+                print_frame(frame)
+            elif cmd_options.out_file and frame.is_control==0:
+                outfile=open(cmd_options.out_file,'a')
+                print_frame(frame)
+            c.controlled_incoming(frame) 
+        else:
+            break
+
+    l=list(c.stream_state.values())
+    k=list(c.stream_state.keys())
+
+    if len(l)==(l.count('close')+l.count('terminate')):
+        cprint("[ Final status ]",'white','on_blue')
+        print("state of all the streams is: ",c.stream_state)
+        print("")
         ss.close()
         break
-
 
 
