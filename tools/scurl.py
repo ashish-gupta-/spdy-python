@@ -36,11 +36,9 @@ parser.add_option("-T","--upload-file",dest="put_data",help="This transfers the 
 parser.add_option("--http-version",dest="http_ver",default="1.1",help="(HTTP) Which HTTP version to use")
 parser.add_option("-v", "--verbose",action="store_true", dest="verbose", default=False,help="make lots of noise [default is no verbose]")
 
-
 #Parse the options supplied from CLI
 (options, args) = parser.parse_args()
 urls=args
-
 #initialize zlib
 options.version=int(options.version)
 traffic.inflater = Inflater(options.version)
@@ -250,14 +248,20 @@ for url in urls:
     #Convery dict to list of tiple
     if options.url_form_data:
         if options.use_def_hdr:
-            hdr_dict[':method']="POST"
+            if (options.version==2):
+                hdr_dict['method']="POST"
+            if (options.version==3):
+                hdr_dict[':method']="POST"
         hdr_dict['content-type']="application/x-www-form-urlencoded"
         url_data=handle_url_form_data(options.url_form_data)
         hdr_dict['content-length']=len(url_data)
 
     if options.form_data:
         if options.use_def_hdr:
-            hdr_dict[':method']="POST"
+            if (options.version==2):
+                hdr_dict['method']="POST"
+            if (options.version==3):
+                hdr_dict[':method']="POST"
         hdr_dict['content-type']="multipart/form-data; boundary=----------------------------402bda0d4395"
         final_form_data=handle_form_data(options.form_data)
         hdr_dict['content-length']=len(final_form_data)
