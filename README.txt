@@ -3,8 +3,8 @@ SPDY library in python. Many concepts are derived from https://github.com/colinm
 For developers
 ===============
 python setup.py sdist
-mv dist/spdylib-1.0.tar.gz req-binaries/
-rm -rf MANIFEST dist
+mv dist/spdylib-2.1.tar.gz req-binaries/
+rm -rf MANIFEST dist build
 
 Requirements
 ------------
@@ -54,8 +54,8 @@ rm -rf termcolor-1.1.0
 cd ..
 
 7. Install spdylib
-tar -zxvf spdylib-1.0.tar.gz
-cd spdylib-1.0
+tar -zxvf spdylib-2.1.tar.gz
+cd spdylib-2.1
 python3.3 setup.py install
 cd ..
 

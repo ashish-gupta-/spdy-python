@@ -22,7 +22,7 @@ parser.add_option("-H","--header",dest="custhdr",
                     action="append",help="Provide a custom header which will be sent along with the request i.e. -H 'host:10.102.116.64'")
 parser.add_option("-2",dest="version",action="store_const",const="2",default=2,help="provide this option for using spdy version 2")
 parser.add_option("-3",dest="version",action="store_const",const="3",help="provide this option for using spdy version 2")
-parser.add_option("-A","--user-agent",dest="u_agent",default="spdy-curl-v1.0",help="(HTTP) Specify the User-Agent string to send to the HTTP server")
+parser.add_option("-A","--user-agent",dest="u_agent",default="spdy-curl-v2.1",help="(HTTP) Specify the User-Agent string to send to the HTTP server")
 parser.add_option("-F","--form",dest="form_data",help="(HTTP) This lets curl emulate a filled-in form in which a user has pressed the submit button. This causes curl to POST data using the Content-Type multipart/form-data according to RFC 2388. -F data=@file.html for using a file content and -F dump=asasadad for sending specified data on console.")
 parser.add_option("-d","--data",dest="url_form_data",
                     action="append",help="(HTTP) Sends the specified data in a POST request to the HTTP server, in the same way that a browser does when a user has filled in an HTML form and presses the submit button. This will cause curl to pass the data to the server using the content-type application/x-www-form-urlencoded")
