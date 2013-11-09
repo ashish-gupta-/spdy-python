@@ -268,7 +268,10 @@ for url in urls:
 
     if options.put_data:
         if options.use_def_hdr:
-            hdr_dict[':method']="PUT"
+            if (options.version==2):
+                hdr_dict['method']="PUT"
+            if (options.version==3):
+                hdr_dict[':method']="PUT"
         f=open(options.put_data)
         final_put_data=f.read()
         f.close()

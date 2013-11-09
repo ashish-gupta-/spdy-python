@@ -64,10 +64,12 @@ cd spdylib-2.1
 python3.3 setup.py install
 cd ..
 
-8. scurl is ready to use:-
+8. scurl and spdyt are ready to use:-
 cd ../tools
 python3.3 scurl.py -h
 python3.3 scurl.py -v https://www.google.co.in
 
+python3.3 spdyt.py -h
+python3.3 spdyt.py -v 3 -2 spdy_client.cfg
 
 
