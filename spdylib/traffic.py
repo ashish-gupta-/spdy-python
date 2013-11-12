@@ -1,6 +1,7 @@
 import spdylib.frames as frames
 from bitarray import bitarray
 from spdylib._zlib_stream import Inflater, Deflater
+import gzip
 
 #version=2
 #inflater = Inflater(version)
@@ -141,7 +142,10 @@ def parse_frame(chunk):
     else : #it is a data frame
         stream_id=int.from_bytes(chunk[0:4],'big')
         flags=int.from_bytes(chunk[4:5],'big')
-        data=chunk[8:last_byte_for_frame].decode('utf-8')
+        try:
+            data=chunk[8:last_byte_for_frame].decode('utf-8')
+        except:
+            data=gzip.decompress(chunk[8:last_byte_for_frame]).decode('utf-8')
         frame=frames.dataframe(stream_id,data,flags)
         return (True,chunk[last_byte_for_frame:],frame)
 
@@ -269,6 +273,7 @@ def encode_frame(frame): #Converting the frame into bytes using the frame defini
         tmp.extend(_value_to_bits(len(frame.data),24))
         encoded_frame.extend(tmp.tobytes())
         encoded_frame.extend(bytes(frame.data,'utf-8'))
+        #encoded_frame.extend(frame.data)
 
     return encoded_frame
 
